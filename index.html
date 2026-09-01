@@ -455,7 +455,7 @@
         });
     }
 
-    function startStudentExam() {
+function startStudentExam() {
         const cat = document.getElementById('user-select-category').value;
         const sub = document.getElementById('user-select-subject').value;
         const paperIdx = document.getElementById('user-select-paper').value;
@@ -469,8 +469,14 @@
         btn.innerText = "Loading Excel Paper...";
         btn.disabled = true;
 
+        // GitHub / Online File Fetch
         fetch(selectedPaperConfig.file)
-            .then(res => res.arrayBuffer())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("HTTP error! Status: " + res.status);
+                }
+                return res.arrayBuffer();
+            })
             .then(buffer => {
                 const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -513,12 +519,12 @@
                 renderExamQuestions();
             })
             .catch(err => {
-                alert("Excel ફાઇલ ડાઉનલોડ કરવામાં તકલીફ થઈ. GitHub Path તપાસો!");
+                console.error(err);
+                alert("Excel ફાઇલ મળી નથી! ફાઇલ પાથ તપાસો: " + selectedPaperConfig.file);
                 btn.innerText = "Start Exam Now";
                 btn.disabled = false;
             });
     }
-
     function startTimer() {
         timerInterval = setInterval(() => {
             let m = Math.floor(timeRemaining / 60);
