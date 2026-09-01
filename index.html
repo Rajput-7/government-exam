@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Government Exam Portal with Admin Panel</title>
+    <title>Government Exam Portal</title>
     <!-- SheetJS & Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,17 +14,17 @@
 
         .container { max-width: 950px; margin: 10px auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        .btn { background-color: #007bff; color: white; border: none; padding: 9px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; margin: 4px; transition: 0.2s; display: inline-block; }
+        .btn { background-color: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-size: 14px; margin: 4px; transition: 0.2s; display: inline-block; font-weight: bold; }
         .btn:hover { background-color: #0056b3; }
         .btn-success { background-color: #28a745; }
         .btn-success:hover { background-color: #218838; }
+        .btn-whatsapp { background-color: #25D366; color: white; }
+        .btn-whatsapp:hover { background-color: #128C7E; }
         .btn-danger { background-color: #dc3545; }
-        .btn-danger:hover { background-color: #bd2130; }
         .btn-secondary { background-color: #6c757d; }
         .btn-dark { background-color: #343a40; }
 
         .card { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid #007bff; border: 1px solid #dee2e6; }
-        .card-admin { border-left-color: #dc3545; }
         
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
@@ -69,7 +69,7 @@
         
         <div style="margin-bottom: 15px; text-align: center;">
             <button class="btn" onclick="showAuthTab('login')">Student Login</button>
-            <button class="btn btn-secondary" onclick="showAuthTab('register')">New Registration</button>
+            <button class="btn btn-whatsapp" onclick="showAuthTab('register')">New Registration (WhatsApp)</button>
             <button class="btn btn-dark" onclick="showAuthTab('admin')">Admin Panel</button>
         </div>
 
@@ -87,22 +87,20 @@
             <button class="btn btn-success" onclick="studentLogin()">Login & Start Test</button>
         </div>
 
-        <!-- Registration Form -->
+        <!-- Registration Form (WhatsApp Request) -->
         <div id="tab-register" class="hidden">
-            <h3>Student Registration</h3><br>
+            <h3>Request New Registration</h3>
+            <p style="color: #666; font-size: 13px; margin-bottom: 15px;">તમારું નામ અને મોબાઈલ નંબર સબમિટ કરવાથી WhatsApp દ્વારા Admin ને વિનંતી મોકલાશે.</p>
+            
             <div class="form-group">
                 <label>Full Name:</label>
                 <input type="text" id="reg-name" placeholder="Enter Full Name">
             </div>
             <div class="form-group">
-                <label>Mobile Number (User ID):</label>
+                <label>Mobile Number:</label>
                 <input type="text" id="reg-phone" placeholder="Enter Mobile Number">
             </div>
-            <div class="form-group">
-                <label>Create Password:</label>
-                <input type="password" id="reg-pass" placeholder="Enter Password">
-            </div>
-            <button class="btn btn-success" onclick="registerUser()">Register</button>
+            <button class="btn btn-whatsapp" onclick="sendWhatsAppRegistration()">Send Request via WhatsApp 📲</button>
         </div>
 
         <!-- Admin Login -->
@@ -169,7 +167,7 @@
         <hr><br>
 
         <!-- Add User Card -->
-        <div class="card card-admin">
+        <div class="card" style="border-left-color: #dc3545;">
             <h3>Add New Student</h3><br>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <input type="text" id="admin-add-name" placeholder="Full Name" style="flex: 1; min-width: 150px; padding: 8px;">
@@ -180,7 +178,7 @@
         </div>
 
         <!-- Registered Users List -->
-        <div class="card card-admin">
+        <div class="card" style="border-left-color: #dc3545;">
             <h3>Registered Students List (User Management)</h3>
             <div class="table-wrapper">
                 <table id="admin-users-table">
@@ -198,7 +196,7 @@
         </div>
 
         <!-- Student Exam Results Report -->
-        <div class="card card-admin">
+        <div class="card" style="border-left-color: #dc3545;">
             <h3>Student Exam Reports & Results</h3>
             <div class="table-wrapper">
                 <table id="admin-results-table">
@@ -252,6 +250,9 @@
     </div>
 
 <script>
+    // 💥 તમારો WhatsApp નંબર અહીં લખવો (દેશના કોડ સાથે, જેમ કે 919876543210)
+    const ADMIN_WHATSAPP_NUMBER = "9913721247"; 
+
     let manifestData = [];
     let currentUser = null;
     let selectedPaperConfig = null;
@@ -261,7 +262,6 @@
     let timeRemaining = 0;
     let myResultChart = null;
 
-    // Local Storage Databases
     let userDatabase = JSON.parse(localStorage.getItem('portal_users_db') || '{}');
     let testResultsDB = JSON.parse(localStorage.getItem('portal_results_db') || '[]');
 
@@ -291,18 +291,21 @@
         if (tab === 'admin') document.getElementById('tab-admin').classList.remove('hidden');
     }
 
-    // Student Registration
-    function registerUser() {
+    // 📲 Send Registration Request to Admin WhatsApp
+    function sendWhatsAppRegistration() {
         const name = document.getElementById('reg-name').value.trim();
         const phone = document.getElementById('reg-phone').value.trim();
-        const pass = document.getElementById('reg-pass').value.trim();
 
-        if (!name || !phone || !pass) { alert('કૃપા કરીને બધી વિગતો ભરો!'); return; }
+        if (!name || !phone) {
+            alert('કૃપા કરીને તમારું નામ અને મોબાઈલ નંબર ભરો!');
+            return;
+        }
 
-        userDatabase[phone] = { name: name, pass: pass };
-        localStorage.setItem('portal_users_db', JSON.stringify(userDatabase));
-        alert('રજીસ્ટ્રેશન સફળ થઈ ગયું છે! હવે Login કરો.');
-        showAuthTab('login');
+        const msg = `હેલો Admin,\n\nમને Exam Portal માટે નવું એકાઉન્ટ જોઈએ છે.\n\n👤 નામ: ${name}\n📱 મોબાઈલ: ${phone}\n\nકૃપા કરીને મને ID અને Password આપશો.`;
+        const encodedMsg = encodeURIComponent(msg);
+        
+        const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodedMsg}`;
+        window.open(whatsappUrl, '_blank');
     }
 
     // Student Login
@@ -338,7 +341,6 @@
 
     function logout() { location.reload(); }
 
-    // Admin Operations: Add User
     function adminAddUser() {
         const name = document.getElementById('admin-add-name').value.trim();
         const phone = document.getElementById('admin-add-phone').value.trim();
@@ -357,7 +359,6 @@
         renderAdminUserList();
     }
 
-    // Admin Operations: Remove User
     function adminRemoveUser(phone) {
         if (confirm(`શું તમે યુઝર ${phone} ને કાઢી નાખવા માંગો છો?`)) {
             delete userDatabase[phone];
@@ -366,7 +367,6 @@
         }
     }
 
-    // Admin Operations: Render Users Table
     function renderAdminUserList() {
         const tbody = document.getElementById('admin-users-list');
         tbody.innerHTML = '';
@@ -386,7 +386,6 @@
         });
     }
 
-    // Admin Operations: Render All Results Table
     function renderAdminResultsList() {
         const tbody = document.getElementById('admin-results-list');
         tbody.innerHTML = '';
@@ -455,7 +454,7 @@
         });
     }
 
-function startStudentExam() {
+    function startStudentExam() {
         const cat = document.getElementById('user-select-category').value;
         const sub = document.getElementById('user-select-subject').value;
         const paperIdx = document.getElementById('user-select-paper').value;
@@ -469,12 +468,9 @@ function startStudentExam() {
         btn.innerText = "Loading Excel Paper...";
         btn.disabled = true;
 
-        // GitHub / Online File Fetch
         fetch(selectedPaperConfig.file)
             .then(res => {
-                if (!res.ok) {
-                    throw new Error("HTTP error! Status: " + res.status);
-                }
+                if (!res.ok) throw new Error("File fetch failed");
                 return res.arrayBuffer();
             })
             .then(buffer => {
@@ -519,12 +515,12 @@ function startStudentExam() {
                 renderExamQuestions();
             })
             .catch(err => {
-                console.error(err);
-                alert("Excel ફાઇલ મળી નથી! ફાઇલ પાથ તપાસો: " + selectedPaperConfig.file);
+                alert("Excel ફાઈલ ડાઉનલોડ કરવામાં તકલીફ થઈ. Path તપાસો: " + selectedPaperConfig.file);
                 btn.innerText = "Start Exam Now";
                 btn.disabled = false;
             });
     }
+
     function startTimer() {
         timerInterval = setInterval(() => {
             let m = Math.floor(timeRemaining / 60);
