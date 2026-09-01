@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Integrated Exam Portal</title>
+    <!-- SheetJS & Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f4f6f9; color: #333; padding: 10px; }
+        .hidden { display: none !important; }
+
+        .container { max-width: 900px; margin: 10px auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .btn { background-color: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-size: 14px; margin: 4px; transition: 0.2s; display: inline-block; }
+        .btn:hover { background-color: #0056b3; }
+        .btn-success { background-color: #28a745; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-secondary { background-color: #6c757d; }
+
+        .card { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid #007bff; border: 1px solid #dee2e6; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; box-sizing: border-box; }
+
+        .timer-bar { display: flex; justify-content: space-between; align-items: center; background: #212529; color: #fff; padding: 12px 15px; border-radius: 6px; position: sticky; top: 5px; z-index: 100; flex-wrap: wrap; gap: 10px; }
+        
+        .question-card { background: #fff; padding: 15px; margin-top: 15px; border-radius: 6px; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .question-title { font-size: 16px; color: #1a252f; margin-bottom: 10px; font-weight: 600; word-break: break-word; }
+        
+        .option-label { display: block; margin: 8px 0; padding: 10px 12px; background: #f8f9fa; border: 1px solid #ced4da; border-radius: 5px; cursor: pointer; transition: 0.2s; font-size: 14px; word-break: break-word; }
+        .option-label:hover { background-color: #e2e6ea; }
+        .option-label input { margin-right: 8px; transform: scale(1.1); }
+
+        .opt-correct { background-color: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
+        .opt-wrong { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+
+        .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; min-width: 450px; }
+        table, th, td { border: 1px solid #dee2e6; }
+        th, td { padding: 8px 10px; text-align: left; font-size: 13px; }
+        th { background-color: #e9ecef; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
+        .bg-success { background: #28a745; }
+        .bg-danger { background: #dc3545; }
+
+        @media (max-width: 600px) {
+            body { padding: 5px; }
+            .container { padding: 12px; }
+            .btn { width: 100%; margin: 4px 0; text-align: center; }
+            .timer-bar { flex-direction: column; align-items: flex-start; }
+            .form-group input, .form-group select { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. AUTH SCREEN -->
+    <div id="auth-screen" class="container">
+        <h2 style="margin-bottom: 15px; text-align: center;">Live Exam Portal</h2>
+        
+        <div style="margin-bottom: 15px; text-align: center;">
+            <button class="btn" onclick="showAuthTab('login')">Student Login</button>
+            <button class="btn btn-secondary" onclick="showAuthTab('register')">New Registration</button>
+        </div>
+
+        <!-- Student Login -->
+        <div id="tab-login">
+            <h3>Student Login</h3><br>
+            <div class="form-group">
+                <label>User ID / Mobile Number:</label>
+                <input type="text" id="user-login-id" placeholder="Enter Mobile Number">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="user-login-pass" placeholder="Enter Password">
+            </div>
+            <button class="btn btn-success" onclick="studentLogin()">Login & Start Test</button>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="tab-register" class="hidden">
+            <h3>New User Registration</h3><br>
+            <div class="form-group">
+                <label>Full Name:</label>
+                <input type="text" id="reg-name" placeholder="Enter Full Name">
+            </div>
+            <div class="form-group">
+                <label>WhatsApp Mobile Number:</label>
+                <input type="text" id="reg-phone" placeholder="Enter Mobile Number">
+            </div>
+            <button class="btn btn-success" onclick="registerUser()">Register Now</button>
+        </div>
+    </div>
+
+    <!-- 2. STUDENT DASHBOARD -->
+    <div id="student-dashboard" class="container hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <h2>Dashboard: <span id="student-display-name" style="color: #007bff;"></span></h2>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+        <hr><br>
+
+        <div class="card">
+            <h3>Select Exam & Paper</h3><br>
+            <div class="form-group">
+                <label>1. Select Exam Category:</label>
+                <select id="user-select-category" onchange="filterSubjects()">
+                    <option value="">-- Choose Exam Category --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>2. Select Subject:</label>
+                <select id="user-select-subject" onchange="filterPapers()">
+                    <option value="">-- Choose Subject --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>3. Select Paper:</label>
+                <select id="user-select-paper">
+                    <option value="">-- Choose Paper --</option>
+                </select>
+            </div>
+            <br>
+            <button class="btn btn-success" id="btn-start-exam" onclick="startStudentExam()">Start Exam Now</button>
+        </div>
+
+        <div class="card">
+            <h3>Your Exam History</h3>
+            <div class="table-wrapper">
+                <div id="student-history-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ACTIVE EXAM SCREEN -->
+    <div id="exam-screen" class="container hidden">
+        <div class="timer-bar">
+            <h3 id="active-test-title" style="font-size: 16px;">Exam Title</h3>
+            <div>Time Left: <strong id="timer-display" style="color: #ffc107; font-size: 18px;">00:00</strong></div>
+        </div>
+
+        <div id="questions-wrapper"></div>
+
+        <br>
+        <button class="btn btn-danger" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold;" onclick="submitExam()">
+            Submit All Answers
+        </button>
+    </div>
+
+    <!-- 4. RESULT SCREEN -->
+    <div id="result-screen" class="container hidden">
+        <h2>Exam Performance Summary</h2>
+        <hr><br>
+        
+        <div id="result-score-details" class="card" style="background: #e8f5e9;"></div>
+
+        <div style="max-width: 260px; margin: 15px auto;">
+            <canvas id="studentResultChart"></canvas>
+        </div>
+
+        <br>
+        <h3>Detailed Solutions</h3>
+        <div id="result-solutions-wrapper"></div>
+        <br>
+        <button class="btn" onclick="location.reload()">Back to Home</button>
+    </div>
+
+<script>
+    let manifestData = [];
+    let currentUser = null;
+    let selectedPaperConfig = null;
+    let activeQuestions = [];
+    let userAnswers = {};
+    let timerInterval;
+    let timeRemaining = 0;
+    let myResultChart = null;
+
+    let userDatabase = JSON.parse(localStorage.getItem('portal_users_db') || '{}');
+    let testResultsDB = JSON.parse(localStorage.getItem('portal_results_db') || '[]');
+
+    // Load Manifest on Page Load
+    window.onload = function() {
+        fetchManifest();
+    };
+
+    function fetchManifest() {
+        fetch('manifest.json')
+            .then(res => res.json())
+            .then(data => {
+                manifestData = data;
+                populateCategoryDropdown();
+            })
+            .catch(err => {
+                console.error("Manifest load error:", err);
+            });
+    }
+
+    function showAuthTab(tab) {
+        document.getElementById('tab-login').classList.add('hidden');
+        document.getElementById('tab-register').classList.add('hidden');
+        if (tab === 'login') document.getElementById('tab-login').classList.remove('hidden');
+        if (tab === 'register') document.getElementById('tab-register').classList.remove('hidden');
+    }
+
+    function registerUser() {
+        const name = document.getElementById('reg-name').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+
+        if (!name || !phone) { alert('કૃપા કરીને વિગતો ભરો!'); return; }
+
+        userDatabase[phone] = { name: name, pass: "123456" };
+        localStorage.setItem('portal_users_db', JSON.stringify(userDatabase));
+        alert(`રજીસ્ટ્રેશન સફળ! તમારો Password "123456" છે. તમે Login કરી શકો છો.`);
+        showAuthTab('login');
+    }
+
+    function studentLogin() {
+        const u = document.getElementById('user-login-id').value.trim();
+        const p = document.getElementById('user-login-pass').value.trim();
+
+        if (userDatabase[u] && userDatabase[u].pass === p) {
+            currentUser = { id: u, name: userDatabase[u].name };
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('student-dashboard').classList.remove('hidden');
+            document.getElementById('student-display-name').innerText = currentUser.name;
+            renderStudentHistory();
+        } else {
+            alert('ખોટો User ID અથવા Password! (નવા યુઝર રજીસ્ટ્રેશન કરો)');
+        }
+    }
+
+    function logout() { location.reload(); }
+
+    function populateCategoryDropdown() {
+        const catSelect = document.getElementById('user-select-category');
+        catSelect.innerHTML = '<option value="">-- Choose Exam Category --</option>';
+
+        const categories = [...new Set(manifestData.map(item => item.category))];
+        categories.forEach(cat => {
+            let opt = document.createElement('option');
+            opt.value = cat;
+            opt.innerText = cat;
+            catSelect.appendChild(opt);
+        });
+    }
+
+    function filterSubjects() {
+        const cat = document.getElementById('user-select-category').value;
+        const subSelect = document.getElementById('user-select-subject');
+        subSelect.innerHTML = '<option value="">-- Choose Subject --</option>';
+
+        const filtered = manifestData.filter(item => item.category === cat);
+        const subjects = [...new Set(filtered.map(item => item.subject))];
+
+        subjects.forEach(sub => {
+            let opt = document.createElement('option');
+            opt.value = sub;
+            opt.innerText = sub;
+            subSelect.appendChild(opt);
+        });
+    }
+
+    function filterPapers() {
+        const cat = document.getElementById('user-select-category').value;
+        const sub = document.getElementById('user-select-subject').value;
+        const paperSelect = document.getElementById('user-select-paper');
+        paperSelect.innerHTML = '<option value="">-- Choose Paper --</option>';
+
+        const filtered = manifestData.filter(item => item.category === cat && item.subject === sub);
+
+        filtered.forEach((item, index) => {
+            let opt = document.createElement('option');
+            opt.value = index;
+            opt.innerText = item.title;
+            paperSelect.appendChild(opt);
+        });
+    }
+
+    function startStudentExam() {
+        const cat = document.getElementById('user-select-category').value;
+        const sub = document.getElementById('user-select-subject').value;
+        const paperIdx = document.getElementById('user-select-paper').value;
+
+        if (!cat || !sub || paperIdx === "") { alert('તમામ વિગતો પસંદ કરો!'); return; }
+
+        const filtered = manifestData.filter(item => item.category === cat && item.subject === sub);
+        selectedPaperConfig = filtered[paperIdx];
+
+        const btn = document.getElementById('btn-start-exam');
+        btn.innerText = "Loading Excel Paper...";
+        btn.disabled = true;
+
+        // GitHub માંથી Excel ફાઇલ ફેચ કરો
+        fetch(selectedPaperConfig.file)
+            .then(res => res.arrayBuffer())
+            .then(buffer => {
+                const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                activeQuestions = json.map((row, idx) => {
+                    const opts = [
+                        row['Option A'] || row['Option_A'] || '',
+                        row['Option B'] || row['Option_B'] || '',
+                        row['Option C'] || row['Option_C'] || '',
+                        row['Option D'] || row['Option_D'] || '',
+                        row['Option E'] || row['Option_E'] || 'E (Not Attempted)'
+                    ];
+
+                    let correctIdx = 0;
+                    const correctVal = String(row['Correct Option'] || row['Correct_Option']).trim();
+                    opts.forEach((optText, i) => {
+                        if (String(optText).trim() === correctVal) correctIdx = i;
+                    });
+
+                    return {
+                        qNo: row['Question No.'] || (idx + 1),
+                        question: row['Question'],
+                        options: opts,
+                        answer: correctIdx
+                    };
+                });
+
+                btn.innerText = "Start Exam Now";
+                btn.disabled = false;
+
+                timeRemaining = selectedPaperConfig.timer * 60;
+                userAnswers = {};
+
+                document.getElementById('student-dashboard').classList.add('hidden');
+                document.getElementById('exam-screen').classList.remove('hidden');
+                document.getElementById('active-test-title').innerText = selectedPaperConfig.title;
+
+                startTimer();
+                renderExamQuestions();
+            })
+            .catch(err => {
+                alert("Excel ફાઇલ લોડ કરવામાં તકલીફ થઈ. GitHub File Path તપાસો!");
+                btn.innerText = "Start Exam Now";
+                btn.disabled = false;
+            });
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            let m = Math.floor(timeRemaining / 60);
+            let s = timeRemaining % 60;
+            document.getElementById('timer-display').innerText = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
+            
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                submitExam();
+            }
+            timeRemaining--;
+        }, 1000);
+    }
+
+    function renderExamQuestions() {
+        const wrapper = document.getElementById('questions-wrapper');
+        let html = '';
+
+        activeQuestions.forEach((q, idx) => {
+            html += `
+                <div class="question-card">
+                    <div class="question-title">Q${q.qNo}: ${q.question}</div>
+                    <div>
+            `;
+
+            q.options.forEach((opt, oIdx) => {
+                if(opt) {
+                    html += `
+                        <label class="option-label">
+                            <input type="radio" name="q_${idx}" value="${oIdx}"> ${opt}
+                        </label>
+                    `;
+                }
+            });
+
+            html += `</div></div>`;
+        });
+
+        wrapper.innerHTML = html;
+    }
+
+    function submitExam() {
+        clearInterval(timerInterval);
+
+        activeQuestions.forEach((_, idx) => {
+            const opts = document.getElementsByName(`q_${idx}`);
+            let selected = null;
+            for (let i = 0; i < opts.length; i++) {
+                if (opts[i].checked) {
+                    selected = parseInt(opts[i].value);
+                    break;
+                }
+            }
+            userAnswers[idx] = selected;
+        });
+
+        document.getElementById('exam-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        let totalMarks = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let blankCount = 0;
+
+        let solHtml = '';
+        const rules = selectedPaperConfig;
+
+        activeQuestions.forEach((q, idx) => {
+            const userAns = userAnswers[idx];
+            let isCorrect = false;
+
+            if (userAns === undefined || userAns === null) {
+                blankCount++;
+                totalMarks -= rules.blank;
+            } else if (userAns === q.answer) {
+                correctCount++;
+                totalMarks += rules.right;
+                isCorrect = true;
+            } else {
+                wrongCount++;
+                totalMarks -= rules.wrong;
+            }
+
+            solHtml += `
+                <div class="question-card">
+                    <div class="question-title">Q${q.qNo}: ${q.question}</div>
+                    <div>
+            `;
+
+            q.options.forEach((opt, oIdx) => {
+                if (opt) {
+                    let cssClass = '';
+                    if (oIdx === q.answer) {
+                        cssClass = 'opt-correct';
+                    } else if (oIdx === userAns && !isCorrect) {
+                        cssClass = 'opt-wrong';
+                    }
+
+                    solHtml += `
+                        <div class="option-label ${cssClass}">
+                            ${opt} ${oIdx === q.answer ? '✔️ (સાચો જવાબ)' : ''} ${oIdx === userAns && !isCorrect ? '❌ (તમારો જવાબ)' : ''}
+                        </div>
+                    `;
+                }
+            });
+
+            solHtml += `</div></div>`;
+        });
+
+        const resultData = {
+            studentId: currentUser.id,
+            paperTitle: selectedPaperConfig.title,
+            totalMarks: totalMarks,
+            correct: correctCount,
+            wrong: wrongCount,
+            blank: blankCount
+        };
+
+        testResultsDB.push(resultData);
+        localStorage.setItem('portal_results_db', JSON.stringify(testResultsDB));
+
+        document.getElementById('result-score-details').innerHTML = `
+            <h2>કુલ ગુણ: <span style="color:#2e7d32;">${totalMarks.toFixed(2)}</span></h2><br>
+            <p>સાચા જવાબો: <strong style="color: #28a745;">${correctCount}</strong></p>
+            <p>ખોટા જવાબો: <strong style="color: #dc3545;">${wrongCount}</strong></p>
+            <p>ન આપેલા જવાબો: <strong>${blankCount}</strong></p>
+        `;
+
+        document.getElementById('result-solutions-wrapper').innerHTML = solHtml;
+        renderGraph(correctCount, wrongCount, blankCount);
+    }
+
+    function renderGraph(correct, wrong, blank) {
+        const ctx = document.getElementById('studentResultChart').getContext('2d');
+        if (myResultChart) myResultChart.destroy();
+
+        myResultChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Correct', 'Wrong', 'Unanswered'],
+                datasets: [{
+                    data: [correct, wrong, blank],
+                    backgroundColor: ['#28a745', '#dc3545', '#ffc107']
+                }]
+            }
+        });
+    }
+
+    function renderStudentHistory() {
+        const historyContainer = document.getElementById('student-history-list');
+        const userLogs = testResultsDB.filter(r => r.studentId === currentUser.id);
+
+        if (userLogs.length === 0) {
+            historyContainer.innerHTML = '<p style="color:#666;">હજુ કોઈ ટેસ્ટ આપી નથી.</p>';
+            return;
+        }
+
+        let html = '<table><tr><th>Paper</th><th>Marks</th><th>Correct</th><th>Wrong</th></tr>';
+        userLogs.forEach(r => {
+            html += `
+                <tr>
+                    <td><strong>${r.paperTitle}</strong></td>
+                    <td><strong style="color:#007bff;">${r.totalMarks.toFixed(2)}</strong></td>
+                    <td><span class="badge bg-success">${r.correct}</span></td>
+                    <td><span class="badge bg-danger">${r.wrong}</span></td>
+                </tr>
+            `;
+        });
+        html += '</table>';
+        historyContainer.innerHTML = html;
+    }
+</script>
+</body>
+</html>
