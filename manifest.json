@@ -8,15 +8,5 @@
     "wrong": 0.25,
     "blank": 0,
     "timer": 15
-  },
-  {
-    "category": "Constable",
-    "subject": "Maths",
-    "title": "Maths Practice Paper 1",
-    "file": "papers/Constable/Maths/paper1.xlsx",
-    "right": 1,
-    "wrong": 0.25,
-    "blank": 0,
-    "timer": 20
   }
 ]
