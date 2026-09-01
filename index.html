@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Integrated Exam Portal</title>
+    <title>Government Exam Portal with Admin Panel</title>
     <!-- SheetJS & Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,16 +12,20 @@
         body { background-color: #f4f6f9; color: #333; padding: 10px; }
         .hidden { display: none !important; }
 
-        .container { max-width: 900px; margin: 10px auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .container { max-width: 950px; margin: 10px auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        .btn { background-color: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-size: 14px; margin: 4px; transition: 0.2s; display: inline-block; }
+        .btn { background-color: #007bff; color: white; border: none; padding: 9px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; margin: 4px; transition: 0.2s; display: inline-block; }
         .btn:hover { background-color: #0056b3; }
         .btn-success { background-color: #28a745; }
         .btn-success:hover { background-color: #218838; }
         .btn-danger { background-color: #dc3545; }
+        .btn-danger:hover { background-color: #bd2130; }
         .btn-secondary { background-color: #6c757d; }
+        .btn-dark { background-color: #343a40; }
 
         .card { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid #007bff; border: 1px solid #dee2e6; }
+        .card-admin { border-left-color: #dc3545; }
+        
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
         .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; box-sizing: border-box; }
@@ -39,7 +43,7 @@
         .opt-wrong { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
 
         .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 450px; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
         table, th, td { border: 1px solid #dee2e6; }
         th, td { padding: 8px 10px; text-align: left; font-size: 13px; }
         th { background-color: #e9ecef; }
@@ -61,19 +65,20 @@
 
     <!-- 1. AUTH SCREEN -->
     <div id="auth-screen" class="container">
-        <h2 style="margin-bottom: 15px; text-align: center;">Live Exam Portal</h2>
+        <h2 style="margin-bottom: 15px; text-align: center;">Government Exam Portal</h2>
         
         <div style="margin-bottom: 15px; text-align: center;">
             <button class="btn" onclick="showAuthTab('login')">Student Login</button>
             <button class="btn btn-secondary" onclick="showAuthTab('register')">New Registration</button>
+            <button class="btn btn-dark" onclick="showAuthTab('admin')">Admin Panel</button>
         </div>
 
         <!-- Student Login -->
         <div id="tab-login">
             <h3>Student Login</h3><br>
             <div class="form-group">
-                <label>User ID / Mobile Number:</label>
-                <input type="text" id="user-login-id" placeholder="Enter Mobile Number">
+                <label>Mobile Number:</label>
+                <input type="text" id="user-login-id" placeholder="Enter Registered Mobile Number">
             </div>
             <div class="form-group">
                 <label>Password:</label>
@@ -84,23 +89,41 @@
 
         <!-- Registration Form -->
         <div id="tab-register" class="hidden">
-            <h3>New User Registration</h3><br>
+            <h3>Student Registration</h3><br>
             <div class="form-group">
                 <label>Full Name:</label>
                 <input type="text" id="reg-name" placeholder="Enter Full Name">
             </div>
             <div class="form-group">
-                <label>WhatsApp Mobile Number:</label>
+                <label>Mobile Number (User ID):</label>
                 <input type="text" id="reg-phone" placeholder="Enter Mobile Number">
             </div>
-            <button class="btn btn-success" onclick="registerUser()">Register Now</button>
+            <div class="form-group">
+                <label>Create Password:</label>
+                <input type="password" id="reg-pass" placeholder="Enter Password">
+            </div>
+            <button class="btn btn-success" onclick="registerUser()">Register</button>
+        </div>
+
+        <!-- Admin Login -->
+        <div id="tab-admin" class="hidden">
+            <h3 style="color: #dc3545;">Admin Login Panel</h3><br>
+            <div class="form-group">
+                <label>Admin ID:</label>
+                <input type="text" id="admin-id" placeholder="admin">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="admin-pass" placeholder="admin123">
+            </div>
+            <button class="btn btn-danger" onclick="adminLogin()">Login as Admin</button>
         </div>
     </div>
 
     <!-- 2. STUDENT DASHBOARD -->
     <div id="student-dashboard" class="container hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <h2>Dashboard: <span id="student-display-name" style="color: #007bff;"></span></h2>
+            <h2>Student Dashboard: <span id="student-display-name" style="color: #007bff;"></span></h2>
             <button class="btn btn-danger" onclick="logout()">Logout</button>
         </div>
         <hr><br>
@@ -137,7 +160,65 @@
         </div>
     </div>
 
-    <!-- 3. ACTIVE EXAM SCREEN -->
+    <!-- 3. ADMIN DASHBOARD -->
+    <div id="admin-dashboard" class="container hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <h2 style="color: #dc3545;">Admin Panel Control</h2>
+            <button class="btn btn-danger" onclick="logout()">Admin Logout</button>
+        </div>
+        <hr><br>
+
+        <!-- Add User Card -->
+        <div class="card card-admin">
+            <h3>Add New Student</h3><br>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="admin-add-name" placeholder="Full Name" style="flex: 1; min-width: 150px; padding: 8px;">
+                <input type="text" id="admin-add-phone" placeholder="Mobile Number" style="flex: 1; min-width: 150px; padding: 8px;">
+                <input type="text" id="admin-add-pass" placeholder="Password" style="flex: 1; min-width: 120px; padding: 8px;">
+                <button class="btn btn-success" onclick="adminAddUser()">Add Student</button>
+            </div>
+        </div>
+
+        <!-- Registered Users List -->
+        <div class="card card-admin">
+            <h3>Registered Students List (User Management)</h3>
+            <div class="table-wrapper">
+                <table id="admin-users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Mobile (User ID)</th>
+                            <th>Password</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Student Exam Results Report -->
+        <div class="card card-admin">
+            <h3>Student Exam Reports & Results</h3>
+            <div class="table-wrapper">
+                <table id="admin-results-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Paper Title</th>
+                            <th>Score</th>
+                            <th>Correct</th>
+                            <th>Wrong</th>
+                            <th>Blank</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-results-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. ACTIVE EXAM SCREEN -->
     <div id="exam-screen" class="container hidden">
         <div class="timer-bar">
             <h3 id="active-test-title" style="font-size: 16px;">Exam Title</h3>
@@ -152,7 +233,7 @@
         </button>
     </div>
 
-    <!-- 4. RESULT SCREEN -->
+    <!-- 5. RESULT SCREEN -->
     <div id="result-screen" class="container hidden">
         <h2>Exam Performance Summary</h2>
         <hr><br>
@@ -180,10 +261,10 @@
     let timeRemaining = 0;
     let myResultChart = null;
 
+    // Local Storage Databases
     let userDatabase = JSON.parse(localStorage.getItem('portal_users_db') || '{}');
     let testResultsDB = JSON.parse(localStorage.getItem('portal_results_db') || '[]');
 
-    // Load Manifest on Page Load
     window.onload = function() {
         fetchManifest();
     };
@@ -203,22 +284,28 @@
     function showAuthTab(tab) {
         document.getElementById('tab-login').classList.add('hidden');
         document.getElementById('tab-register').classList.add('hidden');
+        document.getElementById('tab-admin').classList.add('hidden');
+
         if (tab === 'login') document.getElementById('tab-login').classList.remove('hidden');
         if (tab === 'register') document.getElementById('tab-register').classList.remove('hidden');
+        if (tab === 'admin') document.getElementById('tab-admin').classList.remove('hidden');
     }
 
+    // Student Registration
     function registerUser() {
         const name = document.getElementById('reg-name').value.trim();
         const phone = document.getElementById('reg-phone').value.trim();
+        const pass = document.getElementById('reg-pass').value.trim();
 
-        if (!name || !phone) { alert('કૃપા કરીને વિગતો ભરો!'); return; }
+        if (!name || !phone || !pass) { alert('કૃપા કરીને બધી વિગતો ભરો!'); return; }
 
-        userDatabase[phone] = { name: name, pass: "123456" };
+        userDatabase[phone] = { name: name, pass: pass };
         localStorage.setItem('portal_users_db', JSON.stringify(userDatabase));
-        alert(`રજીસ્ટ્રેશન સફળ! તમારો Password "123456" છે. તમે Login કરી શકો છો.`);
+        alert('રજીસ્ટ્રેશન સફળ થઈ ગયું છે! હવે Login કરો.');
         showAuthTab('login');
     }
 
+    // Student Login
     function studentLogin() {
         const u = document.getElementById('user-login-id').value.trim();
         const p = document.getElementById('user-login-pass').value.trim();
@@ -230,11 +317,98 @@
             document.getElementById('student-display-name').innerText = currentUser.name;
             renderStudentHistory();
         } else {
-            alert('ખોટો User ID અથવા Password! (નવા યુઝર રજીસ્ટ્રેશન કરો)');
+            alert('ખોટો Mobile Number અથવા Password!');
+        }
+    }
+
+    // Admin Login
+    function adminLogin() {
+        const id = document.getElementById('admin-id').value.trim();
+        const pass = document.getElementById('admin-pass').value.trim();
+
+        if (id === 'admin' && pass === 'admin123') {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            renderAdminUserList();
+            renderAdminResultsList();
+        } else {
+            alert('ખોટો Admin ID અથવા Password!');
         }
     }
 
     function logout() { location.reload(); }
+
+    // Admin Operations: Add User
+    function adminAddUser() {
+        const name = document.getElementById('admin-add-name').value.trim();
+        const phone = document.getElementById('admin-add-phone').value.trim();
+        const pass = document.getElementById('admin-add-pass').value.trim();
+
+        if (!name || !phone || !pass) { alert('કૃપા કરીને વિગતો ભરો!'); return; }
+
+        userDatabase[phone] = { name: name, pass: pass };
+        localStorage.setItem('portal_users_db', JSON.stringify(userDatabase));
+        alert('યુઝર ઉમેરાઈ ગયો છે!');
+        
+        document.getElementById('admin-add-name').value = '';
+        document.getElementById('admin-add-phone').value = '';
+        document.getElementById('admin-add-pass').value = '';
+        
+        renderAdminUserList();
+    }
+
+    // Admin Operations: Remove User
+    function adminRemoveUser(phone) {
+        if (confirm(`શું તમે યુઝર ${phone} ને કાઢી નાખવા માંગો છો?`)) {
+            delete userDatabase[phone];
+            localStorage.setItem('portal_users_db', JSON.stringify(userDatabase));
+            renderAdminUserList();
+        }
+    }
+
+    // Admin Operations: Render Users Table
+    function renderAdminUserList() {
+        const tbody = document.getElementById('admin-users-list');
+        tbody.innerHTML = '';
+
+        Object.keys(userDatabase).forEach(phone => {
+            const user = userDatabase[phone];
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${user.name}</td>
+                <td>${phone}</td>
+                <td>${user.pass}</td>
+                <td>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="adminRemoveUser('${phone}')">Remove</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Admin Operations: Render All Results Table
+    function renderAdminResultsList() {
+        const tbody = document.getElementById('admin-results-list');
+        tbody.innerHTML = '';
+
+        if (testResultsDB.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">હજુ સુધી કોઈ વિદ્યાર્થીએ ટેસ્ટ આપી નથી.</td></tr>';
+            return;
+        }
+
+        testResultsDB.forEach(res => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${res.studentId}</strong></td>
+                <td>${res.paperTitle}</td>
+                <td><strong style="color: #007bff;">${res.totalMarks.toFixed(2)}</strong></td>
+                <td><span class="badge bg-success">${res.correct}</span></td>
+                <td><span class="badge bg-danger">${res.wrong}</span></td>
+                <td>${res.blank}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
 
     function populateCategoryDropdown() {
         const catSelect = document.getElementById('user-select-category');
@@ -295,7 +469,6 @@
         btn.innerText = "Loading Excel Paper...";
         btn.disabled = true;
 
-        // GitHub માંથી Excel ફાઇલ ફેચ કરો
         fetch(selectedPaperConfig.file)
             .then(res => res.arrayBuffer())
             .then(buffer => {
@@ -340,7 +513,7 @@
                 renderExamQuestions();
             })
             .catch(err => {
-                alert("Excel ફાઇલ લોડ કરવામાં તકલીફ થઈ. GitHub File Path તપાસો!");
+                alert("Excel ફાઇલ ડાઉનલોડ કરવામાં તકલીફ થઈ. GitHub Path તપાસો!");
                 btn.innerText = "Start Exam Now";
                 btn.disabled = false;
             });
