@@ -1,9 +1,9 @@
 [
   {
     "category": "Talati",
-    "subject": "General Knowledge",
-    "title": "GK Special Paper 1",
-    "file": "papers/Talati/GK/paper1.xlsx",
+    "subject": "G.K.",
+    "title": "Paper 1",
+    "file": "papers/Talati/G.K./paper1.xlsx",
     "right": 1,
     "wrong": 0.25,
     "blank": 0,
