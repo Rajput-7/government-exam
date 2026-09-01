@@ -3,7 +3,57 @@
     "category": "Talati",
     "subject": "G.K",
     "title": "Paper 1",
-    "file": "government-exam/papers/Talati/G.K/paper1.xlsx",
+    "file": "Papers/Talati/G.K/Paper1.xlsx",
+    "right": 1,
+    "wrong": 0.25,
+    "blank": 0,
+    "timer": 15
+  },
+  {
+    "category": "Talati",
+    "subject": "English",
+    "title": "Paper 1",
+    "file": "Papers/Talati/English/Paper1.xlsx",
+    "right": 1,
+    "wrong": 0.25,
+    "blank": 0,
+    "timer": 15
+  },
+  {
+    "category": "Talati",
+    "subject": "Gujarati",
+    "title": "Paper 1",
+    "file": "Papers/Talati/Gujarati/Paper1.xlsx",
+    "right": 1,
+    "wrong": 0.25,
+    "blank": 0,
+    "timer": 15
+  },
+  {
+    "category": "Talati",
+    "subject": "Maths",
+    "title": "Paper 1",
+    "file": "Papers/Talati/Maths/Paper1.xlsx",
+    "right": 1,
+    "wrong": 0.25,
+    "blank": 0,
+    "timer": 15
+  },
+  {
+    "category": "Talati",
+    "subject": "Reasoning",
+    "title": "Paper 1",
+    "file": "Papers/Talati/Reasoning/Paper1.xlsx",
+    "right": 1,
+    "wrong": 0.25,
+    "blank": 0,
+    "timer": 15
+  },
+  {
+    "category": "SSC",
+    "subject": "G.K",
+    "title": "Paper 1",
+    "file": "Papers/SSC/G.K/Paper1.xlsx",
     "right": 1,
     "wrong": 0.25,
     "blank": 0,
