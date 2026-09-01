@@ -1,697 +1,379 @@
 <!DOCTYPE html>
 <html lang="gu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Government Exam Portal</title>
-    <!-- SheetJS & Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #f4f6f9; color: #333; padding: 10px; }
-        .hidden { display: none !important; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Government Exam Practice Portal</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --secondary: #0284c7;
+      --accent: #f59e0b;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+    }
 
-        .container { max-width: 950px; margin: 10px auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        .btn { background-color: #007bff; color: white; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-size: 14px; margin: 4px; transition: 0.2s; display: inline-block; font-weight: bold; }
-        .btn:hover { background-color: #0056b3; }
-        .btn-success { background-color: #28a745; }
-        .btn-success:hover { background-color: #218838; }
-        .btn-whatsapp { background-color: #25D366; color: white; }
-        .btn-whatsapp:hover { background-color: #128C7E; }
-        .btn-danger { background-color: #dc3545; }
-        .btn-secondary { background-color: #6c757d; }
-        .btn-dark { background-color: #343a40; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
 
-        .card { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid #007bff; border: 1px solid #dee2e6; }
-        
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; box-sizing: border-box; }
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
 
-        .timer-bar { display: flex; justify-content: space-between; align-items: center; background: #212529; color: #fff; padding: 12px 15px; border-radius: 6px; position: sticky; top: 5px; z-index: 100; flex-wrap: wrap; gap: 10px; }
-        
-        .question-card { background: #fff; padding: 15px; margin-top: 15px; border-radius: 6px; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .question-title { font-size: 16px; color: #1a252f; margin-bottom: 10px; font-weight: 600; word-break: break-word; }
-        
-        .option-label { display: block; margin: 8px 0; padding: 10px 12px; background: #f8f9fa; border: 1px solid #ced4da; border-radius: 5px; cursor: pointer; transition: 0.2s; font-size: 14px; word-break: break-word; }
-        .option-label:hover { background-color: #e2e6ea; }
-        .option-label input { margin-right: 8px; transform: scale(1.1); }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
 
-        .opt-correct { background-color: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
-        .opt-wrong { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
 
-        .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        table, th, td { border: 1px solid #dee2e6; }
-        th, td { padding: 8px 10px; text-align: left; font-size: 13px; }
-        th { background-color: #e9ecef; }
-        
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
-        .bg-success { background: #28a745; }
-        .bg-danger { background: #dc3545; }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: background 0.2s;
+      width: 100%;
+      margin-top: 1rem;
+    }
 
-        @media (max-width: 600px) {
-            body { padding: 5px; }
-            .container { padding: 12px; }
-            .btn { width: 100%; margin: 4px 0; text-align: center; }
-            .timer-bar { flex-direction: column; align-items: flex-start; }
-            .form-group input, .form-group select { font-size: 16px; }
-        }
-    </style>
+    .btn:hover {
+      background: var(--secondary);
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .option-btn {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      background: #f1f5f9;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .option-btn.selected {
+      border-color: var(--secondary);
+      background: #e0f2fe;
+    }
+
+    .timer {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #dc2626;
+      text-align: right;
+      margin-bottom: 1rem;
+    }
+
+    .result-summary {
+      text-align: center;
+    }
+
+    .result-score {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .loader {
+      text-align: center;
+      font-weight: bold;
+      color: var(--primary);
+    }
+  </style>
 </head>
 <body>
 
-    <!-- 1. AUTH SCREEN -->
-    <div id="auth-screen" class="container">
-        <h2 style="margin-bottom: 15px; text-align: center;">Government Exam Portal</h2>
-        
-        <div style="margin-bottom: 15px; text-align: center;">
-            <button class="btn" onclick="showAuthTab('login')">Student Login</button>
-            <button class="btn btn-whatsapp" onclick="showAuthTab('register')">New Registration (WhatsApp)</button>
-            <button class="btn btn-dark" onclick="showAuthTab('admin')">Admin Panel</button>
-        </div>
+  <div class="header">
+    <h1>Government Exam Practice Portal</h1>
+    <p>સ્પર્ધાત્મક પરીક્ષાઓ માટે શ્રેષ્ઠ તૈયારી</p>
+  </div>
 
-        <!-- Student Login -->
-        <div id="tab-login">
-            <h3>Student Login</h3><br>
-            <div class="form-group">
-                <label>Mobile Number:</label>
-                <input type="text" id="user-login-id" placeholder="Enter Registered Mobile Number">
-            </div>
-            <div class="form-group">
-                <label>Password:</label>
-                <input type="password" id="user-login-pass" placeholder="Enter Password">
-            </div>
-            <button class="btn btn-success" onclick="studentLogin()">Login & Start Test</button>
-        </div>
+  <div class="container">
 
-        <!-- Registration Form (WhatsApp Request) -->
-        <div id="tab-register" class="hidden">
-            <h3>Request New Registration</h3>
-            <p style="color: #666; font-size: 13px; margin-bottom: 15px;">તમારું નામ અને મોબાઈલ નંબર સબમિટ કરવાથી WhatsApp દ્વારા Admin ને વિનંતી મોકલાશે.</p>
-            
-            <div class="form-group">
-                <label>Full Name:</label>
-                <input type="text" id="reg-name" placeholder="Enter Full Name">
-            </div>
-            <div class="form-group">
-                <label>Mobile Number:</label>
-                <input type="text" id="reg-phone" placeholder="Enter Mobile Number">
-            </div>
-            <button class="btn btn-whatsapp" onclick="sendWhatsAppRegistration()">Send Request via WhatsApp 📲</button>
-        </div>
-
-        <!-- Admin Login -->
-        <div id="tab-admin" class="hidden">
-            <h3 style="color: #dc3545;">Admin Login Panel</h3><br>
-            <div class="form-group">
-                <label>Admin ID:</label>
-                <input type="text" id="admin-id" placeholder="admin">
-            </div>
-            <div class="form-group">
-                <label>Password:</label>
-                <input type="password" id="admin-pass" placeholder="admin123">
-            </div>
-            <button class="btn btn-danger" onclick="adminLogin()">Login as Admin</button>
-        </div>
+    <!-- Loading Indicator -->
+    <div id="loader" class="card loader hidden">
+      ડેટા પ્રોસેસ થઈ રહ્યો છે, મહેરબાની કરીને રાહ જુઓ...
     </div>
 
-    <!-- 2. STUDENT DASHBOARD -->
-    <div id="student-dashboard" class="container hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <h2>Student Dashboard: <span id="student-display-name" style="color: #007bff;"></span></h2>
-            <button class="btn btn-danger" onclick="logout()">Logout</button>
-        </div>
-        <hr><br>
-
-        <div class="card">
-            <h3>Select Exam & Paper</h3><br>
-            <div class="form-group">
-                <label>1. Select Exam Category:</label>
-                <select id="user-select-category" onchange="filterSubjects()">
-                    <option value="">-- Choose Exam Category --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>2. Select Subject:</label>
-                <select id="user-select-subject" onchange="filterPapers()">
-                    <option value="">-- Choose Subject --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>3. Select Paper:</label>
-                <select id="user-select-paper">
-                    <option value="">-- Choose Paper --</option>
-                </select>
-            </div>
-            <br>
-            <button class="btn btn-success" id="btn-start-exam" onclick="startStudentExam()">Start Exam Now</button>
-        </div>
-
-        <div class="card">
-            <h3>Your Exam History</h3>
-            <div class="table-wrapper">
-                <div id="student-history-list"></div>
-            </div>
-        </div>
+    <!-- Login Box -->
+    <div id="login-section" class="card">
+      <h2>Student Login</h2>
+      <div class="form-group">
+        <label for="mobile">મોબાઈલ નંબર (Mobile Number):</label>
+        <input type="text" id="mobile" placeholder="૧૦ આંકડાનો મોબાઈલ નંબર લખો">
+      </div>
+      <div class="form-group">
+        <label for="password">પાસવર્ડ (Password):</label>
+        <input type="password" id="password" placeholder="તમારો પાસવર્ડ લખો">
+      </div>
+      <button class="btn" onclick="handleLogin()">Login કરો</button>
     </div>
 
-    <!-- 3. ADMIN DASHBOARD -->
-    <div id="admin-dashboard" class="container hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <h2 style="color: #dc3545;">Admin Panel Control</h2>
-            <button class="btn btn-danger" onclick="logout()">Admin Logout</button>
-        </div>
-        <hr><br>
+    <!-- Exam Dashboard -->
+    <div id="dashboard-section" class="card hidden">
+      <h2>Welcome, <span id="student-name"></span>!</h2>
+      <p>નીચે આપેલા પેપર માંથી પરીક્ષા પસંદ કરો:</p>
+      
+      <div class="form-group">
+        <label for="paper-select">પેપર પસંદ કરો (Select Paper):</label>
+        <select id="paper-select">
+          <option value="CCE Model Paper 1">CCE Model Paper 1 (ગણિત / રીઝનિંગ / ગુજરાતી / અંગ્રેજી)</option>
+          <option value="GPSC General Studies Paper 1">GPSC General Studies Paper 1</option>
+          <option value="Talati Special Paper 1">Talati Special Paper 1</option>
+        </select>
+      </div>
 
-        <!-- Add User Card -->
-        <div class="card" style="border-left-color: #dc3545;">
-            <h3>Add New Student</h3><br>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" id="admin-add-name" placeholder="Full Name" style="flex: 1; min-width: 150px; padding: 8px;">
-                <input type="text" id="admin-add-phone" placeholder="Mobile Number" style="flex: 1; min-width: 150px; padding: 8px;">
-                <input type="text" id="admin-add-pass" placeholder="Password" style="flex: 1; min-width: 120px; padding: 8px;">
-                <button class="btn btn-success" onclick="adminAddUser()">Add Student</button>
-            </div>
-        </div>
-
-        <!-- Registered Users List -->
-        <div class="card" style="border-left-color: #dc3545;">
-            <h3>Registered Students List (User Management)</h3>
-            <div class="table-wrapper">
-                <table id="admin-users-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Mobile (User ID)</th>
-                            <th>Password</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-users-list"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Student Exam Results Report -->
-        <div class="card" style="border-left-color: #dc3545;">
-            <h3>Student Exam Reports & Results</h3>
-            <div class="table-wrapper">
-                <table id="admin-results-table">
-                    <thead>
-                        <tr>
-                            <th>Student ID</th>
-                            <th>Paper Title</th>
-                            <th>Score</th>
-                            <th>Correct</th>
-                            <th>Wrong</th>
-                            <th>Blank</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-results-list"></tbody>
-                </table>
-            </div>
-        </div>
+      <button class="btn" onclick="startExam()">પરીક્ષા શરૂ કરો (Start Exam)</button>
     </div>
 
-    <!-- 4. ACTIVE EXAM SCREEN -->
-    <div id="exam-screen" class="container hidden">
-        <div class="timer-bar">
-            <h3 id="active-test-title" style="font-size: 16px;">Exam Title</h3>
-            <div>Time Left: <strong id="timer-display" style="color: #ffc107; font-size: 18px;">00:00</strong></div>
-        </div>
-
-        <div id="questions-wrapper"></div>
-
-        <br>
-        <button class="btn btn-danger" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold;" onclick="submitExam()">
-            Submit All Answers
-        </button>
+    <!-- Question Section -->
+    <div id="exam-section" class="card hidden">
+      <div class="timer" id="timer">સમય: 10:00</div>
+      <h3 id="question-text">પ્રશ્ન લોડ થઈ રહ્યો છે...</h3>
+      <div id="options-container"></div>
+      <button class="btn" id="next-btn" onclick="nextQuestion()">આગળનો પ્રશ્ન (Next)</button>
     </div>
 
-    <!-- 5. RESULT SCREEN -->
-    <div id="result-screen" class="container hidden">
-        <h2>Exam Performance Summary</h2>
-        <hr><br>
-        
-        <div id="result-score-details" class="card" style="background: #e8f5e9;"></div>
-
-        <div style="max-width: 260px; margin: 15px auto;">
-            <canvas id="studentResultChart"></canvas>
-        </div>
-
-        <br>
-        <h3>Detailed Solutions</h3>
-        <div id="result-solutions-wrapper"></div>
-        <br>
-        <button class="btn" onclick="location.reload()">Back to Home</button>
+    <!-- Result Section -->
+    <div id="result-section" class="card hidden result-summary">
+      <h2>પરીક્ષાનું પરિણામ (Exam Result)</h2>
+      <div class="result-score" id="score-text">0 / 0</div>
+      <p id="detailed-score"></p>
+      <button class="btn" onclick="location.reload()">ફરીથી પરીક્ષા આપો</button>
     </div>
 
-<script>
-    // 💥 તમારો WhatsApp નંબર અહીં લખવો (દેશના કોડ સાથે, જેમ કે 919876543210)
-    const ADMIN_WHATSAPP_NUMBER = "9913721247"; 
+  </div>
 
-    let manifestData = [];
+  <script>
+    // Google Apps Script Web App URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3Uolq10K5Rwajy3J7Xu9O6pq9IMOGTVJECqLOcBzLKgD3EtefOTaVScdQe4e6-LCO/exec";
+
+    // Sample Question Bank
+    const sampleQuestions = [
+      {
+        question: "ગુજરાતનું રાજ્ય પક્ષી કયું છે?",
+        options: ["મોર", "હંસ (ફ્લેમિંગો)", "પોપટ", "કબૂતર"],
+        answer: 1
+      },
+      {
+        question: "ભારતનું બંધારણ ક્યારે અમલમાં આવ્યું?",
+        options: ["15 ઓગસ્ટ 1947", "26 જાન્યુઆરી 1950", "26 નવેમ્બર 1949", "2 ઓક્ટોબર 1969"],
+        answer: 1
+      },
+      {
+        question: "ગુજરાતની સૌથી મોટી નદી કઈ છે?",
+        options: ["સાબરમતી", "તાપી", "મહી", "નર્મદા"],
+        answer: 3
+      }
+    ];
+
     let currentUser = null;
-    let selectedPaperConfig = null;
-    let activeQuestions = [];
-    let userAnswers = {};
-    let timerInterval;
-    let timeRemaining = 0;
-    let myResultChart = null;
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = [];
+    let timerInterval = null;
+    let timeRemaining = 600; // 10 minutes
 
-    let userDatabase = JSON.parse(localStorage.getItem('portal_users_db') || '{}');
-    let testResultsDB = JSON.parse(localStorage.getItem('portal_results_db') || '[]');
-
-    window.onload = function() {
-        fetchManifest();
-    };
-
-    function fetchManifest() {
-        fetch('manifest.json')
-            .then(res => res.json())
-            .then(data => {
-                manifestData = data;
-                populateCategoryDropdown();
-            })
-            .catch(err => {
-                console.error("Manifest load error:", err);
-            });
+    function showLoader(show) {
+      document.getElementById('loader').classList.toggle('hidden', !show);
     }
 
-    function showAuthTab(tab) {
-        document.getElementById('tab-login').classList.add('hidden');
-        document.getElementById('tab-register').classList.add('hidden');
-        document.getElementById('tab-admin').classList.add('hidden');
+    async function handleLogin() {
+      const mobile = document.getElementById('mobile').value.trim();
+      const password = document.getElementById('password').value.trim();
 
-        if (tab === 'login') document.getElementById('tab-login').classList.remove('hidden');
-        if (tab === 'register') document.getElementById('tab-register').classList.remove('hidden');
-        if (tab === 'admin') document.getElementById('tab-admin').classList.remove('hidden');
-    }
+      if (!mobile || !password) {
+        alert("મહેરબાની કરીને મોબાઈલ નંબર અને પાસવર્ડ બંને દાખલ કરો.");
+        return;
+      }
 
-    // 📲 Send Registration Request to Admin WhatsApp
-    function sendWhatsAppRegistration() {
-        const name = document.getElementById('reg-name').value.trim();
-        const phone = document.getElementById('reg-phone').value.trim();
+      showLoader(true);
 
-        if (!name || !phone) {
-            alert('કૃપા કરીને તમારું નામ અને મોબાઈલ નંબર ભરો!');
-            return;
-        }
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=getUsers`);
+        const users = await response.json();
 
-        const msg = `હેલો Admin,\n\nમને Exam Portal માટે નવું એકાઉન્ટ જોઈએ છે.\n\n👤 નામ: ${name}\n📱 મોબાઈલ: ${phone}\n\nકૃપા કરીને મને ID અને Password આપશો.`;
-        const encodedMsg = encodeURIComponent(msg);
-        
-        const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodedMsg}`;
-        window.open(whatsappUrl, '_blank');
-    }
+        showLoader(false);
 
-    // Student Login
-    function studentLogin() {
-        const u = document.getElementById('user-login-id').value.trim();
-        const p = document.getElementById('user-login-pass').value.trim();
-
-        if (userDatabase[u] && userDatabase[u].pass === p) {
-            currentUser = { id: u, name: userDatabase[u].name };
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('student-dashboard').classList.remove('hidden');
-            document.getElementById('student-display-name').innerText = currentUser.name;
-            renderStudentHistory();
+        if (users[mobile] && users[mobile].pass === password) {
+          currentUser = { mobile: mobile, name: users[mobile].name };
+          document.getElementById('student-name').innerText = currentUser.name;
+          document.getElementById('login-section').classList.add('hidden');
+          document.getElementById('dashboard-section').classList.remove('hidden');
         } else {
-            alert('ખોટો Mobile Number અથવા Password!');
+          alert("મોબાઈલ નંબર અથવા પાસવર્ડ ખોટો છે!");
         }
+      } catch (error) {
+        showLoader(false);
+        console.error("Error logging in:", error);
+        alert("લોગિન કરવામાં સમસ્યા આવી છે. કૃપા કરીને Google Sheet ની સેટિંગ્સ તપાસો.");
+      }
     }
 
-    // Admin Login
-    function adminLogin() {
-        const id = document.getElementById('admin-id').value.trim();
-        const pass = document.getElementById('admin-pass').value.trim();
-
-        if (id === 'admin' && pass === 'admin123') {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.remove('hidden');
-            renderAdminUserList();
-            renderAdminResultsList();
-        } else {
-            alert('ખોટો Admin ID અથવા Password!');
-        }
-    }
-
-    function logout() { location.reload(); }
-
-    function adminAddUser() {
-        const name = document.getElementById('admin-add-name').value.trim();
-        const phone = document.getElementById('admin-add-phone').value.trim();
-        const pass = document.getElementById('admin-add-pass').value.trim();
-
-        if (!name || !phone || !pass) { alert('કૃપા કરીને વિગતો ભરો!'); return; }
-
-        userDatabase[phone] = { name: name, pass: pass };
-        localStorage.setItem('portal_users_db', JSON.stringify(userDatabase));
-        alert('યુઝર ઉમેરાઈ ગયો છે!');
-        
-        document.getElementById('admin-add-name').value = '';
-        document.getElementById('admin-add-phone').value = '';
-        document.getElementById('admin-add-pass').value = '';
-        
-        renderAdminUserList();
-    }
-
-    function adminRemoveUser(phone) {
-        if (confirm(`શું તમે યુઝર ${phone} ને કાઢી નાખવા માંગો છો?`)) {
-            delete userDatabase[phone];
-            localStorage.setItem('portal_users_db', JSON.stringify(userDatabase));
-            renderAdminUserList();
-        }
-    }
-
-    function renderAdminUserList() {
-        const tbody = document.getElementById('admin-users-list');
-        tbody.innerHTML = '';
-
-        Object.keys(userDatabase).forEach(phone => {
-            const user = userDatabase[phone];
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${user.name}</td>
-                <td>${phone}</td>
-                <td>${user.pass}</td>
-                <td>
-                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="adminRemoveUser('${phone}')">Remove</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function renderAdminResultsList() {
-        const tbody = document.getElementById('admin-results-list');
-        tbody.innerHTML = '';
-
-        if (testResultsDB.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">હજુ સુધી કોઈ વિદ્યાર્થીએ ટેસ્ટ આપી નથી.</td></tr>';
-            return;
-        }
-
-        testResultsDB.forEach(res => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${res.studentId}</strong></td>
-                <td>${res.paperTitle}</td>
-                <td><strong style="color: #007bff;">${res.totalMarks.toFixed(2)}</strong></td>
-                <td><span class="badge bg-success">${res.correct}</span></td>
-                <td><span class="badge bg-danger">${res.wrong}</span></td>
-                <td>${res.blank}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function populateCategoryDropdown() {
-        const catSelect = document.getElementById('user-select-category');
-        catSelect.innerHTML = '<option value="">-- Choose Exam Category --</option>';
-
-        const categories = [...new Set(manifestData.map(item => item.category))];
-        categories.forEach(cat => {
-            let opt = document.createElement('option');
-            opt.value = cat;
-            opt.innerText = cat;
-            catSelect.appendChild(opt);
-        });
-    }
-
-    function filterSubjects() {
-        const cat = document.getElementById('user-select-category').value;
-        const subSelect = document.getElementById('user-select-subject');
-        subSelect.innerHTML = '<option value="">-- Choose Subject --</option>';
-
-        const filtered = manifestData.filter(item => item.category === cat);
-        const subjects = [...new Set(filtered.map(item => item.subject))];
-
-        subjects.forEach(sub => {
-            let opt = document.createElement('option');
-            opt.value = sub;
-            opt.innerText = sub;
-            subSelect.appendChild(opt);
-        });
-    }
-
-    function filterPapers() {
-        const cat = document.getElementById('user-select-category').value;
-        const sub = document.getElementById('user-select-subject').value;
-        const paperSelect = document.getElementById('user-select-paper');
-        paperSelect.innerHTML = '<option value="">-- Choose Paper --</option>';
-
-        const filtered = manifestData.filter(item => item.category === cat && item.subject === sub);
-
-        filtered.forEach((item, index) => {
-            let opt = document.createElement('option');
-            opt.value = index;
-            opt.innerText = item.title;
-            paperSelect.appendChild(opt);
-        });
-    }
-
-    function startStudentExam() {
-        const cat = document.getElementById('user-select-category').value;
-        const sub = document.getElementById('user-select-subject').value;
-        const paperIdx = document.getElementById('user-select-paper').value;
-
-        if (!cat || !sub || paperIdx === "") { alert('તમામ વિગતો પસંદ કરો!'); return; }
-
-        const filtered = manifestData.filter(item => item.category === cat && item.subject === sub);
-        selectedPaperConfig = filtered[paperIdx];
-
-        const btn = document.getElementById('btn-start-exam');
-        btn.innerText = "Loading Excel Paper...";
-        btn.disabled = true;
-
-        fetch(selectedPaperConfig.file)
-            .then(res => {
-                if (!res.ok) throw new Error("File fetch failed");
-                return res.arrayBuffer();
-            })
-            .then(buffer => {
-                const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet);
-
-                activeQuestions = json.map((row, idx) => {
-                    const opts = [
-                        row['Option A'] || row['Option_A'] || '',
-                        row['Option B'] || row['Option_B'] || '',
-                        row['Option C'] || row['Option_C'] || '',
-                        row['Option D'] || row['Option_D'] || '',
-                        row['Option E'] || row['Option_E'] || 'E (Not Attempted)'
-                    ];
-
-                    let correctIdx = 0;
-                    const correctVal = String(row['Correct Option'] || row['Correct_Option']).trim();
-                    opts.forEach((optText, i) => {
-                        if (String(optText).trim() === correctVal) correctIdx = i;
-                    });
-
-                    return {
-                        qNo: row['Question No.'] || (idx + 1),
-                        question: row['Question'],
-                        options: opts,
-                        answer: correctIdx
-                    };
-                });
-
-                btn.innerText = "Start Exam Now";
-                btn.disabled = false;
-
-                timeRemaining = selectedPaperConfig.timer * 60;
-                userAnswers = {};
-
-                document.getElementById('student-dashboard').classList.add('hidden');
-                document.getElementById('exam-screen').classList.remove('hidden');
-                document.getElementById('active-test-title').innerText = selectedPaperConfig.title;
-
-                startTimer();
-                renderExamQuestions();
-            })
-            .catch(err => {
-                alert("Excel ફાઈલ ડાઉનલોડ કરવામાં તકલીફ થઈ. Path તપાસો: " + selectedPaperConfig.file);
-                btn.innerText = "Start Exam Now";
-                btn.disabled = false;
-            });
+    function startExam() {
+      document.getElementById('dashboard-section').classList.add('hidden');
+      document.getElementById('exam-section').classList.remove('hidden');
+      
+      currentQuestions = sampleQuestions;
+      currentQuestionIndex = 0;
+      userAnswers = new Array(currentQuestions.length).fill(null);
+      
+      startTimer();
+      loadQuestion();
     }
 
     function startTimer() {
-        timerInterval = setInterval(() => {
-            let m = Math.floor(timeRemaining / 60);
-            let s = timeRemaining % 60;
-            document.getElementById('timer-display').innerText = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
-            
-            if (timeRemaining <= 0) {
-                clearInterval(timerInterval);
-                submitExam();
-            }
-            timeRemaining--;
-        }, 1000);
-    }
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        document.getElementById('timer').innerText = `સમય: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-    function renderExamQuestions() {
-        const wrapper = document.getElementById('questions-wrapper');
-        let html = '';
-
-        activeQuestions.forEach((q, idx) => {
-            html += `
-                <div class="question-card">
-                    <div class="question-title">Q${q.qNo}: ${q.question}</div>
-                    <div>
-            `;
-
-            q.options.forEach((opt, oIdx) => {
-                if(opt) {
-                    html += `
-                        <label class="option-label">
-                            <input type="radio" name="q_${idx}" value="${oIdx}"> ${opt}
-                        </label>
-                    `;
-                }
-            });
-
-            html += `</div></div>`;
-        });
-
-        wrapper.innerHTML = html;
-    }
-
-    function submitExam() {
-        clearInterval(timerInterval);
-
-        activeQuestions.forEach((_, idx) => {
-            const opts = document.getElementsByName(`q_${idx}`);
-            let selected = null;
-            for (let i = 0; i < opts.length; i++) {
-                if (opts[i].checked) {
-                    selected = parseInt(opts[i].value);
-                    break;
-                }
-            }
-            userAnswers[idx] = selected;
-        });
-
-        document.getElementById('exam-screen').classList.add('hidden');
-        document.getElementById('result-screen').classList.remove('hidden');
-
-        let totalMarks = 0;
-        let correctCount = 0;
-        let wrongCount = 0;
-        let blankCount = 0;
-
-        let solHtml = '';
-        const rules = selectedPaperConfig;
-
-        activeQuestions.forEach((q, idx) => {
-            const userAns = userAnswers[idx];
-            let isCorrect = false;
-
-            if (userAns === undefined || userAns === null) {
-                blankCount++;
-                totalMarks -= rules.blank;
-            } else if (userAns === q.answer) {
-                correctCount++;
-                totalMarks += rules.right;
-                isCorrect = true;
-            } else {
-                wrongCount++;
-                totalMarks -= rules.wrong;
-            }
-
-            solHtml += `
-                <div class="question-card">
-                    <div class="question-title">Q${q.qNo}: ${q.question}</div>
-                    <div>
-            `;
-
-            q.options.forEach((opt, oIdx) => {
-                if (opt) {
-                    let cssClass = '';
-                    if (oIdx === q.answer) {
-                        cssClass = 'opt-correct';
-                    } else if (oIdx === userAns && !isCorrect) {
-                        cssClass = 'opt-wrong';
-                    }
-
-                    solHtml += `
-                        <div class="option-label ${cssClass}">
-                            ${opt} ${oIdx === q.answer ? '✔️ (સાચો જવાબ)' : ''} ${oIdx === userAns && !isCorrect ? '❌ (તમારો જવાબ)' : ''}
-                        </div>
-                    `;
-                }
-            });
-
-            solHtml += `</div></div>`;
-        });
-
-        const resultData = {
-            studentId: currentUser.id,
-            paperTitle: selectedPaperConfig.title,
-            totalMarks: totalMarks,
-            correct: correctCount,
-            wrong: wrongCount,
-            blank: blankCount
-        };
-
-        testResultsDB.push(resultData);
-        localStorage.setItem('portal_results_db', JSON.stringify(testResultsDB));
-
-        document.getElementById('result-score-details').innerHTML = `
-            <h2>કુલ ગુણ: <span style="color:#2e7d32;">${totalMarks.toFixed(2)}</span></h2><br>
-            <p>સાચા જવાબો: <strong style="color: #28a745;">${correctCount}</strong></p>
-            <p>ખોટા જવાબો: <strong style="color: #dc3545;">${wrongCount}</strong></p>
-            <p>ન આપેલા જવાબો: <strong>${blankCount}</strong></p>
-        `;
-
-        document.getElementById('result-solutions-wrapper').innerHTML = solHtml;
-        renderGraph(correctCount, wrongCount, blankCount);
-    }
-
-    function renderGraph(correct, wrong, blank) {
-        const ctx = document.getElementById('studentResultChart').getContext('2d');
-        if (myResultChart) myResultChart.destroy();
-
-        myResultChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Correct', 'Wrong', 'Unanswered'],
-                datasets: [{
-                    data: [correct, wrong, blank],
-                    backgroundColor: ['#28a745', '#dc3545', '#ffc107']
-                }]
-            }
-        });
-    }
-
-    function renderStudentHistory() {
-        const historyContainer = document.getElementById('student-history-list');
-        const userLogs = testResultsDB.filter(r => r.studentId === currentUser.id);
-
-        if (userLogs.length === 0) {
-            historyContainer.innerHTML = '<p style="color:#666;">હજુ કોઈ ટેસ્ટ આપી નથી.</p>';
-            return;
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          submitExam();
         }
-
-        let html = '<table><tr><th>Paper</th><th>Marks</th><th>Correct</th><th>Wrong</th></tr>';
-        userLogs.forEach(r => {
-            html += `
-                <tr>
-                    <td><strong>${r.paperTitle}</strong></td>
-                    <td><strong style="color:#007bff;">${r.totalMarks.toFixed(2)}</strong></td>
-                    <td><span class="badge bg-success">${r.correct}</span></td>
-                    <td><span class="badge bg-danger">${r.wrong}</span></td>
-                </tr>
-            `;
-        });
-        html += '</table>';
-        historyContainer.innerHTML = html;
+      }, 1000);
     }
-</script>
+
+    function loadQuestion() {
+      const q = currentQuestions[currentQuestionIndex];
+      document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${q.question}`;
+      
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        if (userAnswers[currentQuestionIndex] === idx) {
+          btn.classList.add('selected');
+        }
+        btn.innerText = opt;
+        btn.onclick = () => selectOption(idx);
+        container.appendChild(btn);
+      });
+
+      if (currentQuestionIndex === currentQuestions.length - 1) {
+        document.getElementById('next-btn').innerText = "સબમિટ કરો (Submit)";
+      } else {
+        document.getElementById('next-btn').innerText = "આગળનો પ્રશ્ન (Next)";
+      }
+    }
+
+    function selectOption(idx) {
+      userAnswers[currentQuestionIndex] = idx;
+      loadQuestion();
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIndex < currentQuestions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        clearInterval(timerInterval);
+        submitExam();
+      }
+    }
+
+    async function submitExam() {
+      let correct = 0;
+      let wrong = 0;
+      let blank = 0;
+
+      currentQuestions.forEach((q, idx) => {
+        if (userAnswers[idx] === null) {
+          blank++;
+        } else if (userAnswers[idx] === q.answer) {
+          correct++;
+        } else {
+          wrong++;
+        }
+      });
+
+      const totalMarks = (correct * 1) - (wrong * 0.25); // 0.25 Negative marking
+
+      document.getElementById('exam-section').classList.add('hidden');
+      document.getElementById('result-section').classList.remove('hidden');
+
+      document.getElementById('score-text').innerText = `${totalMarks} / ${currentQuestions.length}`;
+      document.getElementById('detailed-score').innerText = `સાચા: ${correct} | ખોટા: ${wrong} | ખાલી: ${blank}`;
+
+      const selectedPaper = document.getElementById('paper-select').value;
+
+      showLoader(true);
+
+      // Save Result to Google Sheet via Web App API
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'saveResult',
+            mobile: currentUser.mobile,
+            paperTitle: selectedPaper,
+            marks: totalMarks,
+            correct: correct,
+            wrong: wrong,
+            blank: blank
+          })
+        });
+      } catch (error) {
+        console.error("Error saving result:", error);
+      } finally {
+        showLoader(false);
+      }
+    }
+  </script>
+
 </body>
 </html>
