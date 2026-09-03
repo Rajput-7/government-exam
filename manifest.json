@@ -48,15 +48,5 @@
     "wrong": 0.25,
     "blank": 0,
     "timer": 15
-  },
-  {
-    "category": "SSC",
-    "subject": "Computer Knowledge",
-    "title": "Paper 1",
-    "file": "Papers/SSC/Computer Knowledge/Paper1.xlsx",
-    "right": 1,
-    "wrong": 0.25,
-    "blank": 0,
-    "timer": 15
   }
 ]
